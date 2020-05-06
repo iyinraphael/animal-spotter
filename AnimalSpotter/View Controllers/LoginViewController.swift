@@ -35,6 +35,14 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
     
     @IBAction func buttonTapped(_ sender: UIButton) {
         // perform login or sign up operation based on loginType
+        if let username = usernameTextField.text, !username.isEmpty,
+            let password = passwordTextField.text, !password.isEmpty {
+            let user = User(username: username, password: password)
+            
+            if loginType == .signUp {
+                
+            }
+        }
     }
     
     @IBAction func signInTypeChanged(_ sender: UISegmentedControl) {
