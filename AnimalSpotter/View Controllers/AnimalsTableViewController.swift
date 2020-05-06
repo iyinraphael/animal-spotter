@@ -14,6 +14,7 @@ class AnimalsTableViewController: UITableViewController {
     
     let reuseIdentifier = "AnimalCell"
     private var animalNames: [String] = []
+    let apiController = APIController()
 
     // MARK: - View Lifecycle
     
@@ -25,6 +26,7 @@ class AnimalsTableViewController: UITableViewController {
         super.viewDidAppear(animated)
         
         // transition to login view if conditions require
+        performSegue(withIdentifier: "LoginViewModalSegue", sender: self)
     }
 
     // MARK: - Table view data source
@@ -54,6 +56,9 @@ class AnimalsTableViewController: UITableViewController {
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "LoginViewModalSegue" {
             // inject dependencies
+            if let loginVc = segue.destination as? LoginViewController {
+                loginVc.apiController = apiController
+            }
         }
     }
 }

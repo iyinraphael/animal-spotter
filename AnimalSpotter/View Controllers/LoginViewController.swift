@@ -31,6 +31,12 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
             signInButton.layer.cornerRadius = 8.0
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        usernameTextField.becomeFirstResponder()
+    }
+    
     // MARK: - Action Handlers
     
     @IBAction func buttonTapped(_ sender: UIButton) {
@@ -41,15 +47,18 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
             
             if loginType == .signUp {
                 apiController?.signup(with: user, completion: { result in
+    
                     if let success = try? result.get() {
                         if success {
-                            let alertController = UIAlertController(title: "Sign Up Successful", message: "Now please log in.", preferredStyle: .alert)
-                            let alertAction = UIAlertAction(title: "OK", style: .default, handler: nil)
-                            alertController.addAction(alertAction)
-                            self.present(alertController, animated: true) {
-                                self.loginType = .signIn
-                                self.loginTypeSegmentedControl.selectedSegmentIndex = 1
-                                self.signInButton.setTitle("Sign In", for: .normal)
+                            DispatchQueue.main.async {
+                                let alertController = UIAlertController(title: "Sign Up Successful", message: "Now please log in.", preferredStyle: .alert)
+                                let alertAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+                                alertController.addAction(alertAction)
+                                self.present(alertController, animated: true) {
+                                    self.loginType = .signIn
+                                    self.loginTypeSegmentedControl.selectedSegmentIndex = 1
+                                    self.signInButton.setTitle("Sign In", for: .normal)
+                                }
                             }
                             
                         } else {
