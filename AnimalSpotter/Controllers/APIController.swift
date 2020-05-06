@@ -37,6 +37,23 @@ final class APIController {
         do {
             let jsonData = try jsonEncoder.encode(user)
             request.httpBody = jsonData
+            //                                                      trailing closures
+            let task = URLSession.shared.dataTask(with: request) { (_, response, error) in
+                if let error = error {
+                    print("Sign up failed with error: \(error)")
+                    completion(.failure(.failedSignUp))
+                    return
+                }
+                guard let response = response as? HTTPURLResponse, response.statusCode == 200 else {
+                    print("Sign up was unsuccessful")
+                    completion(.failure(.failedSignUp))
+                    return
+                }
+                completion(.success(true))
+            }
+            
+            task.resume()
+       
         }catch {
             print("Error encoding user: \(error)")
             completion(.failure(.failedSignUp))
