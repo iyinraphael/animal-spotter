@@ -17,7 +17,7 @@ final class APIController {
     }
     
     enum NetworkError: Error {
-        case noData, failedSignUp
+        case noData, failedSignUp, failedSignIn, noToken
     }
     
     private let baseURL = URL(string: "https://lambdaanimalspotter.vapor.cloud/api")!
@@ -25,6 +25,9 @@ final class APIController {
     private lazy var signInURL = baseURL.appendingPathComponent("/users/login")
     
     private lazy var jsonEncoder = JSONEncoder()
+    private lazy var jsonDecoder = JSONDecoder()
+    
+    var bearer: Bearer?
     
     // create function for sign up *Result let you signal success or failure
     func signup(with user: User, completion: @escaping (Result<Bool, NetworkError>) -> Void) {
@@ -45,13 +48,13 @@ final class APIController {
                     return
                 }
                 guard let response = response as? HTTPURLResponse, response.statusCode == 200 else {
-                    print("Sign up was unsuccessful")
+                    print("Sign up  was unsuccessful")
                     completion(.failure(.failedSignUp))
                     return
                 }
                 completion(.success(true))
             }
-            
+
             task.resume()
        
         }catch {
@@ -59,7 +62,56 @@ final class APIController {
             completion(.failure(.failedSignUp))
         }
     }
+    
     // create function for sign in
+    func signIn(with user: User, completion: @escaping (Result<Bool, NetworkError>) -> Void) {
+        print("signIn = \(signInURL.absoluteString)")
+        
+        var request = URLRequest(url: signInURL)
+        request.httpMethod = HTTPMethod.post.rawValue
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        do {
+            let jsonData = try jsonEncoder.encode(user)
+            request.httpBody = jsonData
+            //                                                      trailing closures
+            let task = URLSession.shared.dataTask(with: request) { data, response, error in
+                if let error = error {
+                    print("Sign in failed with error: \(error)")
+                    completion(.failure(.failedSignIn))
+                    return
+                }
+                guard let response = response as? HTTPURLResponse, response.statusCode == 200 else {
+                    print("Sign in was unsuccessful")
+                    completion(.failure(.failedSignIn))
+                    return
+                }
+                
+                guard let data = data else {
+                    print("No data received during sign in")
+                    completion(.failure(.noData))
+                    return
+                }
+                
+                do {
+                    self.bearer = try self.jsonDecoder.decode(Bearer.self, from: data)
+                } catch {
+                    print("Error decoding bearer data: \(error)")
+                    completion(.failure(.noToken))
+                }
+                
+                completion(.success(true))
+            }
+            
+            task.resume()
+        
+        }catch {
+            print("Error encoding user: \(error)")
+            completion(.failure(.failedSignIn))
+        }
+    }
+    
+    
     
     // create function for fetching all animal names
     

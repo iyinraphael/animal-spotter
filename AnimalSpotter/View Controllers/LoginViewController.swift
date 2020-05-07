@@ -67,6 +67,28 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
                         }
                     }
                 })
+            } else {
+                apiController?.signIn(with: user, completion: { result in
+                    do {
+                        let success = try result.get()
+                        if success {
+                            DispatchQueue.main.async {
+                                self.dismiss(animated: true, completion: nil)
+                            }
+                        }
+                    } catch {
+                        if let error = error as?  APIController.NetworkError {
+                            switch error {
+                            case .failedSignIn:
+                                print("Sign in failed")
+                            case .noData, .noToken:
+                                print("No data received")
+                            default:
+                                print("Other error occured")
+                            }
+                        }
+                    }
+                })
             }
         }
     }
